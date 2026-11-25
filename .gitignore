@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dev-dist/
+
+# Notes personnelles : ne pas publier (le dépôt est public)
+CLAUDE.md
+.claude/
+
+# Documents de voyage et secrets : jamais sur GitHub
+*.pdf
+.env
+.env.*
