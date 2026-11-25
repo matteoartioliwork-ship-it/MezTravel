@@ -9,6 +9,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Le lecteur PDF doit aussi fonctionner sans internet.
+      workbox: {
+        globPatterns: ['**/*.{js,mjs,css,html,wasm,bcmap,ttf,pfb}'],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+      },
       includeAssets: ['icons/apple-touch-icon.png', 'icons/favicon.png'],
       manifest: {
         name: 'MezTravel',

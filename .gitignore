@@ -1,6 +1,7 @@
 node_modules/
 dist/
 dev-dist/
+public/pdfjs/
 
 # Notes personnelles : ne pas publier (le dépôt est public)
 CLAUDE.md

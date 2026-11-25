@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import Reminders from '../components/Reminders'
 import TripForm from '../components/TripForm'
 import { formatDate, type Dictionary, type Language } from '../i18n'
 import { link } from '../route'
 import {
   activitiesOn,
+  bookingsOn,
   countOutside,
   itemsOn,
   listDays,
@@ -61,8 +63,19 @@ export default function TripView({ t, language, trip, onChange, onDelete }: Prop
             </button>
           </div>
 
+          <Reminders t={t} language={language} trips={[trip]} />
+
+          <a className="card row-link bookings-link" href={link(trip.id, 'bookings')}>
+            <strong>📄 {t.bookingsTitle}</strong>
+            <span className="muted">
+              {t.bookingsCount}: {(trip.bookings ?? []).length} · {t.todosCount}:{' '}
+              {(trip.todos ?? []).filter((todo) => !todo.done).length}
+            </span>
+          </a>
+
           {listDays(trip.startDate, trip.endDate).map((date, index) => {
             const activities = activitiesOn(trip, date)
+            const booked = bookingsOn(trip, date)
             const missing = itemsOn(trip, date).filter((item) => !item.done).length
             return (
               <a key={date} className="card row-link" href={link(trip.id, date)}>
@@ -73,6 +86,9 @@ export default function TripView({ t, language, trip, onChange, onDelete }: Prop
                 <strong>{formatDate(date, language)}</strong>
                 {activities.length > 0 && (
                   <span>{activities.map((a) => a.title).join(' · ')}</span>
+                )}
+                {booked.length > 0 && (
+                  <span>📄 {booked.map((b) => b.booking.title).join(' · ')}</span>
                 )}
                 {(activities.length > 0 || missing > 0) && (
                   <span className="muted">

@@ -1,8 +1,11 @@
+import { fileIds } from './backup'
 import { saveFile } from './files'
+import { deleteFiles } from './fileStore'
 import { languages, useLanguage } from './i18n'
 import { link, useRoute } from './route'
 import { rawStoredData, useStore } from './store'
 import { listDays, upsert, type Trip } from './trips'
+import BookingsView from './views/BookingsView'
 import DayView from './views/DayView'
 import TripList from './views/TripList'
 import TripView from './views/TripView'
@@ -40,8 +43,20 @@ export default function App() {
               ...current,
               trips: current.trips.filter((candidate) => candidate.id !== trip.id),
             }))
+            deleteFiles(fileIds([trip])).catch(() => {})
             window.location.hash = link()
           }}
+        />
+      )
+    }
+    if (trip && route.date === 'bookings') {
+      return (
+        <BookingsView
+          key={trip.id}
+          t={t}
+          language={language}
+          trip={trip}
+          onChange={(change) => changeTrip(trip.id, change)}
         />
       )
     }

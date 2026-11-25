@@ -20,6 +20,10 @@ Carte de l'icône : Natural Earth (domaine public).
 - Carte : [tuiles OpenStreetMap](https://operations.osmfoundation.org/policies/tiles/), sans préchargement ni usage hors ligne.
 - Météo : [Open-Meteo](https://open-meteo.com/en/terms), usage non commercial, données CC BY 4.0.
 
+## Réservations
+
+Les PDF sont lus sur le téléphone avec pdf.js et gardés dans IndexedDB ; rien n’est envoyé à un service. La copie de sécurité les contient.
+
 ## Confidentialité
 
 Ne jamais ajouter au dépôt de réservations, documents personnels ou clés d'API.

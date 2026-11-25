@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Backup from '../components/Backup'
+import Reminders from '../components/Reminders'
 import TripForm from '../components/TripForm'
 import { formatDate, type Dictionary, type Language } from '../i18n'
 import { link } from '../route'
@@ -26,6 +27,7 @@ export default function TripList({ t, language, data, update }: Props) {
         <TripForm t={t} onSave={create} onCancel={() => setCreating(false)} />
       ) : (
         <section>
+          <Reminders t={t} language={language} trips={trips} />
           <h2 className="page-title">{t.myTrips}</h2>
           {trips.length === 0 && <p className="card">{t.noTrips}</p>}
           {trips.map((trip) => (

@@ -26,6 +26,29 @@ export type Item = {
   done: boolean
 }
 
+export const bookingTypes = ['stay', 'flight', 'transport', 'ticket', 'other'] as const
+export type BookingType = (typeof bookingTypes)[number]
+
+export type Booking = {
+  id: string
+  type: BookingType
+  title: string
+  date: string // arrivée, départ ou jour du billet
+  time: string
+  endDate: string // départ de l'hébergement ou arrivée du trajet, sinon vide
+  endTime: string
+  notes: string
+  file?: { id: string; name: string } // PDF gardé à part (voir fileStore)
+}
+
+// Chose à réserver.
+export type Todo = {
+  id: string
+  text: string
+  dueDate: string // vide si aucune échéance
+  done: boolean
+}
+
 export type TripDetails = {
   name: string
   destination: string
@@ -37,6 +60,9 @@ export type Trip = TripDetails & {
   id: string
   activities: Activity[]
   items: Item[]
+  // Absents des données créées avant la phase 3.
+  bookings?: Booking[]
+  todos?: Todo[]
   updatedAt: string
 }
 
@@ -143,6 +169,49 @@ function isItem(value: unknown): boolean {
   )
 }
 
+function isBooking(value: unknown): boolean {
+  return (
+    hasStrings(value, ['id', 'type', 'title', 'date', 'time', 'endDate', 'endTime', 'notes']) &&
+    bookingTypes.includes(value.type as BookingType) &&
+    isDate(value.date as string) &&
+    (value.endDate === '' || isDate(value.endDate as string)) &&
+    (value.file === undefined || hasStrings(value.file, ['id', 'name']))
+  )
+}
+
+function isTodo(value: unknown): boolean {
+  return (
+    hasStrings(value, ['id', 'text', 'dueDate']) &&
+    (value.dueDate === '' || isDate(value.dueDate as string)) &&
+    typeof value.done === 'boolean'
+  )
+}
+
+function isOptionalList(value: unknown, check: (element: unknown) => boolean): boolean {
+  return value === undefined || (Array.isArray(value) && value.every(check))
+}
+
+// Ce qu'une réservation représente un jour donné.
+export type BookingRole = 'start' | 'end' | 'during'
+
+export function bookingsOn(trip: Trip, date: string): { booking: Booking; role: BookingRole }[] {
+  const result: { booking: Booking; role: BookingRole; time: string }[] = []
+  for (const booking of trip.bookings ?? []) {
+    if (booking.date === date) {
+      result.push({ booking, role: 'start', time: booking.time })
+    }
+    if (booking.endDate === date && (booking.endDate !== booking.date || booking.type === 'stay')) {
+      result.push({ booking, role: 'end', time: booking.endTime })
+    }
+    if (booking.type === 'stay' && booking.date < date && date < booking.endDate) {
+      result.push({ booking, role: 'during', time: '' })
+    }
+  }
+  return result
+    .sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'))
+    .map(({ booking, role }) => ({ booking, role }))
+}
+
 function isTrip(value: unknown): boolean {
   return (
     hasStrings(value, ['id', 'name', 'destination', 'startDate', 'endDate', 'updatedAt']) &&
@@ -150,7 +219,9 @@ function isTrip(value: unknown): boolean {
     Array.isArray(value.activities) &&
     value.activities.every(isActivity) &&
     Array.isArray(value.items) &&
-    value.items.every(isItem)
+    value.items.every(isItem) &&
+    isOptionalList(value.bookings, isBooking) &&
+    isOptionalList(value.todos, isTodo)
   )
 }
 

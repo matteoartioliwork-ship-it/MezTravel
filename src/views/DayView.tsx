@@ -1,10 +1,12 @@
 import { useState, type FormEvent } from 'react'
 import ActivityForm from '../components/ActivityForm'
+import BookingCard, { bookingLabel } from '../components/BookingCard'
+import PdfViewer from '../components/PdfViewer'
 import DayMap from '../components/DayMap'
 import DayWeather from '../components/DayWeather'
 import { formatDate, type Dictionary, type Language } from '../i18n'
 import { link } from '../route'
-import { activitiesOn, itemsOn, listDays, upsert, type Activity, type Trip } from '../trips'
+import { activitiesOn, bookingsOn, itemsOn, listDays, upsert, type Activity, type Trip } from '../trips'
 
 type Props = {
   t: Dictionary
@@ -17,6 +19,7 @@ type Props = {
 export default function DayView({ t, language, trip, date, onChange }: Props) {
   const [draft, setDraft] = useState<Activity | null>(null)
   const [itemText, setItemText] = useState('')
+  const [viewing, setViewing] = useState<{ id: string; name: string } | null>(null)
 
   const days = listDays(trip.startDate, trip.endDate)
   const index = days.indexOf(date)
@@ -69,6 +72,13 @@ export default function DayView({ t, language, trip, date, onChange }: Props) {
       <h2 className="page-title">{formatDate(date, language, true)}</h2>
 
       <DayWeather t={t} language={language} date={date} stop={stops[0]} />
+
+      {bookingsOn(trip, date).map(({ booking, role }) => (
+        <div key={`${booking.id}-${role}`}>
+          <h3 className="booking-role">{bookingLabel(t, booking, role)}</h3>
+          <BookingCard t={t} language={language} booking={booking} onOpenPdf={setViewing} />
+        </div>
+      ))}
 
       <section className="card">
         <h2>{t.activities}</h2>
@@ -162,6 +172,12 @@ export default function DayView({ t, language, trip, date, onChange }: Props) {
           </button>
         </form>
       </section>
+
+      <a className="back" href={link(trip.id, 'bookings')}>
+        {t.bookingsTitle} ›
+      </a>
+
+      {viewing && <PdfViewer t={t} file={viewing} onClose={() => setViewing(null)} />}
 
       <nav className="day-nav">
         {index > 0 ? <a className="button" href={link(trip.id, days[index - 1])}>‹ {t.previousDay}</a> : <span />}

@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "leaflet": "^1.9.4",
+    "pdfjs-dist": "^6.5.438",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
@@ -22,7 +23,9 @@
     "world-atlas": "^2.0.2"
   },
   "scripts": {
+    "predev": "node scripts/copy-pdfjs.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/copy-pdfjs.mjs",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "icons": "node scripts/make-icons.mjs",
