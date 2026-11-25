@@ -3,6 +3,7 @@ import ActivityForm from '../components/ActivityForm'
 import BookingCard, { bookingLabel } from '../components/BookingCard'
 import PdfViewer from '../components/PdfViewer'
 import DayMap from '../components/DayMap'
+import Diary from '../components/Diary'
 import DayWeather from '../components/DayWeather'
 import { formatDate, type Dictionary, type Language } from '../i18n'
 import { link } from '../route'
@@ -172,6 +173,8 @@ export default function DayView({ t, language, trip, date, onChange }: Props) {
           </button>
         </form>
       </section>
+
+      <Diary t={t} trip={trip} date={date} onChange={onChange} />
 
       <a className="back" href={link(trip.id, 'bookings')}>
         {t.bookingsTitle} ›

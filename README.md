@@ -28,6 +28,10 @@ Les PDF sont lus sur le téléphone avec pdf.js et gardés dans IndexedDB ; rien
 
 Taux : [ExchangeRate-API](https://www.exchangerate-api.com/docs/free) (source citée, taux gardés en cache jusqu’à la mise à jour suivante, aucune redistribution). Les montants sont stockés en millièmes entiers ; chaque dépense garde le taux de sa saisie.
 
+## Journal et urgences
+
+Les photos sont réduites sur le téléphone (sans la position GPS) et gardées dans IndexedDB. Les données d’urgence (`src/emergency.ts`) ne contiennent que des informations lues sur des pages officielles, avec source et date : mettre à jour `checkedOn` après chaque nouveau contrôle.
+
 ## Confidentialité
 
 Ne jamais ajouter au dépôt de réservations, documents personnels ou clés d'API.

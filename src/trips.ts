@@ -64,6 +64,11 @@ export type Expense = {
   repayment?: boolean // remboursement entre deux personnes
 }
 
+export type DiaryEntry = { date: string; text: string }
+
+// L'image elle-même est gardée à part (voir fileStore), sous le même identifiant.
+export type Photo = { id: string; date: string; caption: string }
+
 export type TripDetails = {
   name: string
   destination: string
@@ -82,6 +87,10 @@ export type Trip = TripDetails & {
   currency?: string // monnaie des comptes
   members?: Member[]
   expenses?: Expense[]
+  // Absents des données créées avant la phase 5.
+  diary?: DiaryEntry[]
+  photos?: Photo[]
+  country?: string // pays choisi pour la fiche d'urgence
   updatedAt: string
 }
 
@@ -141,8 +150,8 @@ export function itemsOn(trip: Trip, date: string): Item[] {
 
 // Nombre d'éléments qui ne seraient plus visibles avec ces dates.
 export function countOutside(trip: Trip, startDate: string, endDate: string): number {
-  return [...trip.activities, ...trip.items].filter((e) => e.date < startDate || e.date > endDate)
-    .length
+  const dated = [...trip.activities, ...trip.items, ...(trip.diary ?? []), ...(trip.photos ?? [])]
+  return dated.filter((e) => e.date < startDate || e.date > endDate).length
 }
 
 // Ajoute l'élément, ou remplace celui qui a le même identifiant.
@@ -242,6 +251,28 @@ function hasKnownMembers(trip: Json): boolean {
   )
 }
 
+function isDiaryEntry(value: unknown): boolean {
+  return hasStrings(value, ['date', 'text']) && isDate(value.date as string)
+}
+
+function isPhoto(value: unknown): boolean {
+  return hasStrings(value, ['id', 'date', 'caption']) && isDate(value.date as string)
+}
+
+export function diaryText(trip: Trip, date: string): string {
+  return trip.diary?.find((entry) => entry.date === date)?.text ?? ''
+}
+
+// Un texte vide retire la page du jour.
+export function setDiaryText(trip: Trip, date: string, text: string): Trip {
+  const others = (trip.diary ?? []).filter((entry) => entry.date !== date)
+  return { ...trip, diary: text ? [...others, { date, text }] : others }
+}
+
+export function photosOn(trip: Trip, date: string): Photo[] {
+  return (trip.photos ?? []).filter((photo) => photo.date === date)
+}
+
 // Ce qu'une réservation représente un jour donné.
 export type BookingRole = 'start' | 'end' | 'during'
 
@@ -276,6 +307,9 @@ function isTrip(value: unknown): boolean {
     (value.currency === undefined || isCurrency(value.currency)) &&
     isOptionalList(value.members, isMember) &&
     isOptionalList(value.expenses, isExpense) &&
+    isOptionalList(value.diary, isDiaryEntry) &&
+    isOptionalList(value.photos, isPhoto) &&
+    (value.country === undefined || typeof value.country === 'string') &&
     // Sans monnaie des comptes, des dépenses n'auraient pas de sens.
     (!(value.expenses as unknown[] | undefined)?.length || value.currency !== undefined) &&
     hasKnownMembers(value)

@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent } from 'react'
-import { fileIds, fromBase64, readBackup, toBase64, writeBackup, type StoredFile } from '../backup'
+import { attachments, fileIds, fromBase64, readBackup, toBase64, writeBackup, type StoredFile } from '../backup'
 import { saveFile } from '../files'
 import { getFile, putFiles } from '../fileStore'
 import type { Dictionary } from '../i18n'
@@ -24,17 +24,13 @@ export default function Backup({ t, data, update }: Props) {
     try {
       const files: Record<string, StoredFile> = {}
       let missing = false
-      for (const trip of data.trips) {
-        for (const booking of trip.bookings ?? []) {
-          if (!booking.file) continue
-          const blob = await getFile(booking.file.id)
-          if (!blob) {
-            missing = true
-            continue
-          }
-          const base64 = toBase64(new Uint8Array(await blob.arrayBuffer()))
-          files[booking.file.id] = { name: booking.file.name, base64 }
+      for (const { id, name } of attachments(data.trips)) {
+        const blob = await getFile(id)
+        if (!blob) {
+          missing = true
+          continue
         }
+        files[id] = { name, base64: toBase64(new Uint8Array(await blob.arrayBuffer())) }
       }
       setPrepared({ source: data, text: writeBackup({ data, files }) })
       if (missing) setMessage('backupMissingFiles')
@@ -97,6 +93,11 @@ export default function Backup({ t, data, update }: Props) {
           />
         </label>
       </div>
+      {ready && (
+        <p className="muted">
+          {t.backupSize}: {(ready.length / 1_000_000).toFixed(1)} MB
+        </p>
+      )}
       {message && (
         <p role="status" className={message === 'backupRestored' ? 'success' : 'error'}>
           {t[message]}

@@ -1,4 +1,4 @@
-// Les PDF sont gardés dans IndexedDB, la mémoire du navigateur prévue pour les fichiers.
+// Les PDF et les photos sont gardés dans IndexedDB, la mémoire du navigateur prévue pour les fichiers.
 // On enregistre les octets (et non un objet Blob), plus fiable sur d'anciens iPhone.
 type Stored = { bytes: ArrayBuffer }
 
@@ -39,9 +39,9 @@ export async function putFiles(files: { id: string; bytes: ArrayBuffer }[]): Pro
   })
 }
 
-export async function getFile(id: string): Promise<Blob | null> {
+export async function getFile(id: string, type = 'application/pdf'): Promise<Blob | null> {
   const stored = (await run('readonly', (store) => store.get(id))) as Stored | undefined
-  return stored ? new Blob([stored.bytes], { type: 'application/pdf' }) : null
+  return stored ? new Blob([stored.bytes], { type }) : null
 }
 
 export async function deleteFiles(ids: string[]): Promise<void> {

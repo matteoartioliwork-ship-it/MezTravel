@@ -7,8 +7,10 @@ import {
   activitiesOn,
   bookingsOn,
   countOutside,
+  diaryText,
   itemsOn,
   listDays,
+  photosOn,
   today,
   type Trip,
   type TripDetails,
@@ -81,6 +83,10 @@ export default function TripView({ t, language, trip, onChange, onDelete }: Prop
             </span>
           </a>
 
+          <a className="card row-link money-link" href={link(trip.id, 'emergency')}>
+            <strong>🆘 {t.emergencyTitle}</strong>
+          </a>
+
           {listDays(trip.startDate, trip.endDate).map((date, index) => {
             const activities = activitiesOn(trip, date)
             const booked = bookingsOn(trip, date)
@@ -97,6 +103,12 @@ export default function TripView({ t, language, trip, onChange, onDelete }: Prop
                 )}
                 {booked.length > 0 && (
                   <span>📄 {booked.map((b) => b.booking.title).join(' · ')}</span>
+                )}
+                {(diaryText(trip, date) || photosOn(trip, date).length > 0) && (
+                  <span className="muted">
+                    📔 {t.diaryTitle}
+                    {photosOn(trip, date).length > 0 && ` · 📷 ${photosOn(trip, date).length}`}
+                  </span>
                 )}
                 {(activities.length > 0 || missing > 0) && (
                   <span className="muted">

@@ -5,9 +5,15 @@ import { parseData, type Data, type Trip } from './trips.ts'
 export type StoredFile = { name: string; base64: string }
 export type Backup = { data: Data; files: Record<string, StoredFile> }
 
-export function fileIds(trips: Trip[]): string[] {
-  return trips.flatMap((trip) => (trip.bookings ?? []).flatMap((b) => (b.file ? [b.file.id] : [])))
+// Tous les fichiers gardés à part : PDF des réservations et photos du journal.
+export function attachments(trips: Trip[]): { id: string; name: string }[] {
+  return trips.flatMap((trip) => [
+    ...(trip.bookings ?? []).flatMap((b) => (b.file ? [b.file] : [])),
+    ...(trip.photos ?? []).map((p) => ({ id: p.id, name: `${p.date}.jpg` })),
+  ])
 }
+
+export const fileIds = (trips: Trip[]) => attachments(trips).map((file) => file.id)
 
 export function writeBackup(backup: Backup): string {
   return JSON.stringify({ ...backup.data, files: backup.files })
