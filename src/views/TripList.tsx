@@ -45,6 +45,10 @@ export default function TripList({ t, language, data, update }: Props) {
         </section>
       )}
 
+      <a className="card row-link money-link" href={link('convert')}>
+        <strong>💱 {t.converter}</strong>
+      </a>
+
       <Backup t={t} data={data} update={update} />
 
       {!installed && (

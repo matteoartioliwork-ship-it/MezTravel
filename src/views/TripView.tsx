@@ -73,6 +73,14 @@ export default function TripView({ t, language, trip, onChange, onDelete }: Prop
             </span>
           </a>
 
+          <a className="card row-link money-link" href={link(trip.id, 'expenses')}>
+            <strong>💶 {t.expensesTitle}</strong>
+            <span className="muted">
+              {t.members}: {(trip.members ?? []).length} · {t.expensesCount}:{' '}
+              {(trip.expenses ?? []).filter((e) => !e.repayment).length}
+            </span>
+          </a>
+
           {listDays(trip.startDate, trip.endDate).map((date, index) => {
             const activities = activitiesOn(trip, date)
             const booked = bookingsOn(trip, date)

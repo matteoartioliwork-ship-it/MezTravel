@@ -49,6 +49,21 @@ export type Todo = {
   done: boolean
 }
 
+export type Member = { id: string; name: string }
+
+// Montants en millièmes (voir money.ts).
+export type Expense = {
+  id: string
+  date: string
+  title: string
+  amount: number
+  currency: string
+  rate: number // taux figé à la saisie : 1 « currency » = rate en monnaie des comptes
+  payerId: string
+  shares: { memberId: string; amount: number }[] // parts, dans la monnaie de la dépense
+  repayment?: boolean // remboursement entre deux personnes
+}
+
 export type TripDetails = {
   name: string
   destination: string
@@ -63,6 +78,10 @@ export type Trip = TripDetails & {
   // Absents des données créées avant la phase 3.
   bookings?: Booking[]
   todos?: Todo[]
+  // Absents des données créées avant la phase 4.
+  currency?: string // monnaie des comptes
+  members?: Member[]
+  expenses?: Expense[]
   updatedAt: string
 }
 
@@ -191,6 +210,38 @@ function isOptionalList(value: unknown, check: (element: unknown) => boolean): b
   return value === undefined || (Array.isArray(value) && value.every(check))
 }
 
+const isCurrency = (value: unknown) => typeof value === 'string' && /^[A-Z]{3}$/.test(value)
+const isAmount = (value: unknown) => Number.isSafeInteger(value) && (value as number) >= 0
+
+function isMember(value: unknown): boolean {
+  return hasStrings(value, ['id', 'name'])
+}
+
+function isExpense(value: unknown): boolean {
+  if (!hasStrings(value, ['id', 'date', 'title', 'currency', 'payerId'])) return false
+  const { amount, rate, shares } = value
+  return (
+    isDate(value.date as string) &&
+    isCurrency(value.currency) &&
+    isAmount(amount) &&
+    typeof rate === 'number' &&
+    Number.isFinite(rate) &&
+    rate > 0 &&
+    Array.isArray(shares) &&
+    shares.every((s) => hasStrings(s, ['memberId']) && isAmount(s.amount)) &&
+    // Les parts doivent faire exactement le total.
+    shares.reduce((sum: number, s) => sum + s.amount, 0) === amount
+  )
+}
+
+// Chaque dépense ne doit citer que des participants du voyage.
+function hasKnownMembers(trip: Json): boolean {
+  const ids = new Set(((trip.members as Member[]) ?? []).map((m) => m.id))
+  return ((trip.expenses as Expense[]) ?? []).every(
+    (e) => ids.has(e.payerId) && e.shares.every((s) => ids.has(s.memberId)),
+  )
+}
+
 // Ce qu'une réservation représente un jour donné.
 export type BookingRole = 'start' | 'end' | 'during'
 
@@ -221,7 +272,13 @@ function isTrip(value: unknown): boolean {
     Array.isArray(value.items) &&
     value.items.every(isItem) &&
     isOptionalList(value.bookings, isBooking) &&
-    isOptionalList(value.todos, isTodo)
+    isOptionalList(value.todos, isTodo) &&
+    (value.currency === undefined || isCurrency(value.currency)) &&
+    isOptionalList(value.members, isMember) &&
+    isOptionalList(value.expenses, isExpense) &&
+    // Sans monnaie des comptes, des dépenses n'auraient pas de sens.
+    (!(value.expenses as unknown[] | undefined)?.length || value.currency !== undefined) &&
+    hasKnownMembers(value)
   )
 }
 

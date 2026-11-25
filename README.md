@@ -24,6 +24,10 @@ Carte de l'icône : Natural Earth (domaine public).
 
 Les PDF sont lus sur le téléphone avec pdf.js et gardés dans IndexedDB ; rien n’est envoyé à un service. La copie de sécurité les contient.
 
+## Argent
+
+Taux : [ExchangeRate-API](https://www.exchangerate-api.com/docs/free) (source citée, taux gardés en cache jusqu’à la mise à jour suivante, aucune redistribution). Les montants sont stockés en millièmes entiers ; chaque dépense garde le taux de sa saisie.
+
 ## Confidentialité
 
 Ne jamais ajouter au dépôt de réservations, documents personnels ou clés d'API.

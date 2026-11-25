@@ -6,7 +6,9 @@ import { link, useRoute } from './route'
 import { rawStoredData, useStore } from './store'
 import { listDays, upsert, type Trip } from './trips'
 import BookingsView from './views/BookingsView'
+import ConverterView from './views/ConverterView'
 import DayView from './views/DayView'
+import ExpensesView from './views/ExpensesView'
 import TripList from './views/TripList'
 import TripView from './views/TripView'
 
@@ -27,6 +29,8 @@ export default function App() {
   }
 
   function page() {
+    // « convert » ne peut pas être confondu avec l'identifiant d'un voyage.
+    if (route.tripId === 'convert') return <ConverterView t={t} language={language} />
     if (!route.tripId) {
       return <TripList t={t} language={language} data={data} update={update} />
     }
@@ -52,6 +56,17 @@ export default function App() {
     if (trip && route.date === 'bookings') {
       return (
         <BookingsView
+          key={trip.id}
+          t={t}
+          language={language}
+          trip={trip}
+          onChange={(change) => changeTrip(trip.id, change)}
+        />
+      )
+    }
+    if (trip && route.date === 'expenses') {
+      return (
+        <ExpensesView
           key={trip.id}
           t={t}
           language={language}

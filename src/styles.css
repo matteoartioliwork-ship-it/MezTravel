@@ -512,3 +512,38 @@ main .file-button {
   margin-bottom: 8px;
   background: #fff;
 }
+
+.money-link {
+  border-left: 4px solid var(--red);
+}
+
+.big-result {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.card p.echo {
+  margin: -4px 0 10px;
+}
+
+fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+legend {
+  font-weight: 600;
+}
+
+.segmented {
+  margin: 4px 0 8px;
+}
+
+main .segmented button[aria-pressed='true'] {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
