@@ -588,3 +588,16 @@ main .segmented button[aria-pressed='true'] {
 .address {
   user-select: text;
 }
+
+/* Grand, pour pouvoir montrer l'écran à quelqu'un. */
+.card p.translation {
+  margin: 12px 0 0;
+  padding: 12px;
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  font-size: 1.8rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}

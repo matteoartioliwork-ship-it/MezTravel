@@ -32,6 +32,10 @@ Taux : [ExchangeRate-API](https://www.exchangerate-api.com/docs/free) (source ci
 
 Les photos sont réduites sur le téléphone (sans la position GPS) et gardées dans IndexedDB. Les données d’urgence (`src/emergency.ts`) ne contiennent que des informations lues sur des pages officielles, avec source et date : mettre à jour `checkedOn` après chaque nouveau contrôle.
 
+## Traduction de texte
+
+[MyMemory](https://mymemory.translated.net/doc/spec.php) : à la demande seulement, un paragraphe de 500 octets au maximum, sans adresse e-mail (limite anonyme). Ses [conditions](https://mymemory.translated.net/terms-and-conditions) prévoient la conservation des textes envoyés : l’avertissement à l’écran doit rester.
+
 ## Confidentialité
 
 Ne jamais ajouter au dépôt de réservations, documents personnels ou clés d'API.
