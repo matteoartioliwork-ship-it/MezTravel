@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import ActivityForm from '../components/ActivityForm'
+import DayMap from '../components/DayMap'
+import DayWeather from '../components/DayWeather'
 import { formatDate, type Dictionary, type Language } from '../i18n'
 import { link } from '../route'
 import { activitiesOn, itemsOn, listDays, upsert, type Activity, type Trip } from '../trips'
@@ -20,6 +22,8 @@ export default function DayView({ t, language, trip, date, onChange }: Props) {
   const index = days.indexOf(date)
   const activities = activitiesOn(trip, date)
   const items = itemsOn(trip, date)
+  // Les étapes situées sont numérotées de la même façon dans la liste et sur la carte.
+  const stops = activities.filter((a) => a.location)
   const isNew = draft !== null && !activities.some((a) => a.id === draft.id)
 
   function saveActivity(activity: Activity) {
@@ -45,6 +49,7 @@ export default function DayView({ t, language, trip, date, onChange }: Props) {
     <ActivityForm
       key={draft.id}
       t={t}
+      language={language}
       activity={draft}
       isNew={isNew}
       onSave={saveActivity}
@@ -63,6 +68,8 @@ export default function DayView({ t, language, trip, date, onChange }: Props) {
       </p>
       <h2 className="page-title">{formatDate(date, language, true)}</h2>
 
+      <DayWeather t={t} language={language} date={date} stop={stops[0]} />
+
       <section className="card">
         <h2>{t.activities}</h2>
         {activities.length === 0 && !draft && <p>{t.noActivities}</p>}
@@ -74,6 +81,9 @@ export default function DayView({ t, language, trip, date, onChange }: Props) {
               <li key={activity.id} className="activity">
                 <span className="time">{activity.time || '—'}</span>
                 <div>
+                  {activity.location && (
+                    <span className="stop-number">{stops.indexOf(activity) + 1}</span>
+                  )}
                   <strong>{activity.title}</strong>
                   {activity.place && <p className="muted">{activity.place}</p>}
                   {activity.notes && <p className="notes">{activity.notes}</p>}
@@ -103,6 +113,8 @@ export default function DayView({ t, language, trip, date, onChange }: Props) {
           </button>
         )}
       </section>
+
+      <DayMap t={t} stops={stops} />
 
       <section className="card">
         <h2>{t.toBring}</h2>

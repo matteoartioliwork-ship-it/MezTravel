@@ -9,6 +9,14 @@ export type Activity = {
   title: string
   place: string
   notes: string
+  // Point sur la carte, absent des données et copies créées avant la phase 2.
+  location?: Location
+}
+
+export type Location = {
+  lat: number
+  lon: number
+  label: string // adresse renvoyée par la recherche
 }
 
 export type Item = {
@@ -109,10 +117,21 @@ function hasStrings(value: unknown, keys: string[]): value is Json {
   return isObject(value) && keys.every((key) => typeof value[key] === 'string')
 }
 
+export function isLocation(value: unknown): value is Location {
+  return (
+    hasStrings(value, ['label']) &&
+    typeof value.lat === 'number' &&
+    typeof value.lon === 'number' &&
+    Math.abs(value.lat) <= 90 &&
+    Math.abs(value.lon) <= 180
+  )
+}
+
 function isActivity(value: unknown): boolean {
   return (
     hasStrings(value, ['id', 'date', 'time', 'title', 'place', 'notes']) &&
-    isDate(value.date as string)
+    isDate(value.date as string) &&
+    (value.location === undefined || isLocation(value.location))
   )
 }
 

@@ -14,6 +14,12 @@ Chaque envoi sur `main` publie l'app sur GitHub Pages.
 
 Carte de l'icône : Natural Earth (domaine public).
 
+## Services externes
+
+- Recherche de lieux : [Nominatim](https://operations.osmfoundation.org/policies/nominatim/), uniquement à la demande, 1 requête par seconde au maximum, résultats gardés en cache. Pas d’autocomplétion.
+- Carte : [tuiles OpenStreetMap](https://operations.osmfoundation.org/policies/tiles/), sans préchargement ni usage hors ligne.
+- Météo : [Open-Meteo](https://open-meteo.com/en/terms), usage non commercial, données CC BY 4.0.
+
 ## Confidentialité
 
 Ne jamais ajouter au dépôt de réservations, documents personnels ou clés d'API.

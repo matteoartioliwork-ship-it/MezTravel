@@ -1,21 +1,35 @@
 import { useState, type FormEvent } from 'react'
-import type { Dictionary } from '../i18n'
-import type { Activity } from '../trips'
+import type { Dictionary, Language } from '../i18n'
+import type { Activity, Location } from '../trips'
+import PlaceSearch from './PlaceSearch'
 
 type Props = {
   t: Dictionary
+  language: Language
   activity: Activity
   isNew: boolean
   onSave: (activity: Activity) => void
   onCancel: () => void
 }
 
-export default function ActivityForm({ t, activity, isNew, onSave, onCancel }: Props) {
+export default function ActivityForm({ t, language, activity, isNew, onSave, onCancel }: Props) {
   const [draft, setDraft] = useState(activity)
   const [missingTitle, setMissingTitle] = useState(false)
 
   const set = (key: 'time' | 'title' | 'place' | 'notes', value: string) =>
-    setDraft((current) => ({ ...current, [key]: value }))
+    setDraft((current) => ({
+      ...current,
+      [key]: value,
+      // Si le texte du lieu change, l'ancien point sur la carte n'est plus fiable.
+      ...(key === 'place' ? { location: undefined } : {}),
+    }))
+
+  const choose = (location: Location | undefined) =>
+    setDraft((current) => ({
+      ...current,
+      location,
+      place: current.place.trim() || !location ? current.place : location.label.split(',')[0],
+    }))
 
   function submit(event: FormEvent) {
     event.preventDefault()
@@ -38,6 +52,13 @@ export default function ActivityForm({ t, activity, isNew, onSave, onCancel }: P
         {t.place}
         <input value={draft.place} onChange={(e) => set('place', e.target.value)} />
       </label>
+      <PlaceSearch
+        t={t}
+        language={language}
+        query={draft.place}
+        location={draft.location}
+        onChoose={choose}
+      />
       <label>
         {t.notes}
         <textarea rows={3} value={draft.notes} onChange={(e) => set('notes', e.target.value)} />
