@@ -7,6 +7,7 @@ Application web installable (PWA) de planification de voyages, en italien, angla
 - `npm install` : installer les dépendances
 - `npm run dev` : lancer l'app en local (adresse : `/MezTravel/`)
 - `npm run build` : vérifier et construire l'app
+- `npm test` : tests des règles de l’itinéraire et de la copie de sécurité
 - `npm run icons` : régénérer les icônes
 
 Chaque envoi sur `main` publie l'app sur GitHub Pages.

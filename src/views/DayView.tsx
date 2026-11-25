@@ -1,0 +1,164 @@
+import { useState, type FormEvent } from 'react'
+import ActivityForm from '../components/ActivityForm'
+import { formatDate, type Dictionary, type Language } from '../i18n'
+import { link } from '../route'
+import { activitiesOn, itemsOn, listDays, upsert, type Activity, type Trip } from '../trips'
+
+type Props = {
+  t: Dictionary
+  language: Language
+  trip: Trip
+  date: string
+  onChange: (change: (trip: Trip) => Trip) => void
+}
+
+export default function DayView({ t, language, trip, date, onChange }: Props) {
+  const [draft, setDraft] = useState<Activity | null>(null)
+  const [itemText, setItemText] = useState('')
+
+  const days = listDays(trip.startDate, trip.endDate)
+  const index = days.indexOf(date)
+  const activities = activitiesOn(trip, date)
+  const items = itemsOn(trip, date)
+  const isNew = draft !== null && !activities.some((a) => a.id === draft.id)
+
+  function saveActivity(activity: Activity) {
+    onChange((current) => ({ ...current, activities: upsert(current.activities, activity) }))
+    setDraft(null)
+  }
+
+  function removeActivity(id: string) {
+    if (!window.confirm(t.confirmDeleteActivity)) return
+    onChange((current) => ({ ...current, activities: current.activities.filter((a) => a.id !== id) }))
+  }
+
+  function addItem(event: FormEvent) {
+    event.preventDefault()
+    const text = itemText.trim()
+    if (!text) return
+    const item = { id: crypto.randomUUID(), date, text, done: false }
+    onChange((current) => ({ ...current, items: [...current.items, item] }))
+    setItemText('')
+  }
+
+  const form = draft && (
+    <ActivityForm
+      key={draft.id}
+      t={t}
+      activity={draft}
+      isNew={isNew}
+      onSave={saveActivity}
+      onCancel={() => setDraft(null)}
+    />
+  )
+
+  return (
+    <>
+      <a className="back" href={link(trip.id)}>
+        ‹ {trip.name}
+      </a>
+
+      <p className="muted">
+        {t.day} {index + 1} / {days.length}
+      </p>
+      <h2 className="page-title">{formatDate(date, language, true)}</h2>
+
+      <section className="card">
+        <h2>{t.activities}</h2>
+        {activities.length === 0 && !draft && <p>{t.noActivities}</p>}
+        <ul className="plain">
+          {activities.map((activity) =>
+            draft?.id === activity.id ? (
+              <li key={activity.id}>{form}</li>
+            ) : (
+              <li key={activity.id} className="activity">
+                <span className="time">{activity.time || '—'}</span>
+                <div>
+                  <strong>{activity.title}</strong>
+                  {activity.place && <p className="muted">{activity.place}</p>}
+                  {activity.notes && <p className="notes">{activity.notes}</p>}
+                  <div className="actions">
+                    <button type="button" onClick={() => setDraft(activity)}>
+                      {t.edit}
+                    </button>
+                    <button type="button" onClick={() => removeActivity(activity.id)}>
+                      {t.remove}
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ),
+          )}
+        </ul>
+        {isNew && form}
+        {!draft && (
+          <button
+            type="button"
+            className="primary wide"
+            onClick={() =>
+              setDraft({ id: crypto.randomUUID(), date, time: '', title: '', place: '', notes: '' })
+            }
+          >
+            + {t.addActivity}
+          </button>
+        )}
+      </section>
+
+      <section className="card">
+        <h2>{t.toBring}</h2>
+        {items.length === 0 && <p>{t.noItems}</p>}
+        <ul className="plain">
+          {items.map((item) => (
+            <li key={item.id} className="item">
+              <label className={item.done ? 'done' : undefined}>
+                <input
+                  type="checkbox"
+                  checked={item.done}
+                  onChange={() =>
+                    onChange((current) => ({
+                      ...current,
+                      items: upsert(current.items, { ...item, done: !item.done }),
+                    }))
+                  }
+                />
+                {item.text}
+              </label>
+              <button
+                type="button"
+                aria-label={`${t.remove}: ${item.text}`}
+                onClick={() =>
+                  onChange((current) => ({
+                    ...current,
+                    items: current.items.filter((i) => i.id !== item.id),
+                  }))
+                }
+              >
+                ✕
+              </button>
+            </li>
+          ))}
+        </ul>
+        <form className="add-row" onSubmit={addItem}>
+          <input
+            value={itemText}
+            placeholder={t.toBringPlaceholder}
+            aria-label={t.toBring}
+            onChange={(e) => setItemText(e.target.value)}
+          />
+          <button type="submit" className="primary">
+            {t.add}
+          </button>
+        </form>
+      </section>
+
+      <nav className="day-nav">
+        {index > 0 ? <a className="button" href={link(trip.id, days[index - 1])}>‹ {t.previousDay}</a> : <span />}
+        {index < days.length - 1 && (
+          <a className="button" href={link(trip.id, days[index + 1])}>
+            {t.nextDay} ›
+          </a>
+        )}
+      </nav>
+    </>
+  )
+}
